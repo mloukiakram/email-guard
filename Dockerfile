@@ -1,31 +1,35 @@
-# 1. Use a lightweight Python base image
-FROM python:3.9-slim
+# Use Alpine Linux (Much smaller and faster)
+FROM python:3.9-alpine
 
-# 2. Install System Dependencies (SpamAssassin is key here)
-# We also install 'net-tools' and 'libio-socket-ssl-perl' for SA to work properly
-RUN apt-get update && apt-get install -y \
+# Install System Dependencies
+# Alpine uses 'apk' instead of 'apt', which is faster
+# We install build tools (gcc, make) because some Python libs need to compile
+RUN apk add --no-cache \
     spamassassin \
-    spamc \
-    net-tools \
-    libio-socket-ssl-perl \
-    && rm -rf /var/lib/apt/lists/*
+    perl \
+    perl-net-dns \
+    perl-io-socket-ssl \
+    perl-libwww \
+    make \
+    gcc \
+    musl-dev \
+    linux-headers
 
-# 3. Update SpamAssassin Rules (So it knows modern spam tricks)
-RUN sa-update
+# Initialize SpamAssassin rules
+# 'spamassassin --lint' ensures the config files are created correctly
+RUN sa-update && spamassassin --lint
 
-# 4. Set working directory
+# Set up the app directory
 WORKDIR /app
 
-# 5. Copy your files into the container
+# Copy your files
 COPY . /app
 
-# 6. Install Python Dependencies
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 7. Expose the port (Render usually uses 10000 or similar, handled by env)
+# Expose the port
 EXPOSE 5000
 
-# 8. Start the App using Gunicorn (Production Server)
-# We bind to 0.0.0.0 so external users can reach it
-# CRITICAL CHANGE: Used '-w 1' (1 worker) instead of 4 to prevent crashing on Free Tier (512MB RAM)
+# Run with 1 worker to save memory on free tier
 CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:5000", "app:app"]

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmailGuard IDE v5.1</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom Scrollbar for a 'Pro' feel */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        
+        /* Dark Input Styling */
+        .input-dark { 
+            background: #1e293b; 
+            color: #a5f3fc; 
+            border: 1px solid #334155; 
+            font-family: 'Consolas', 'Monaco', monospace; 
+            font-size: 13px; 
+            line-height: 1.5;
+        }
+        .input-dark:focus { 
+            outline: none; 
+            border-color: #38bdf8; 
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); 
+        }
+        
+        .panel { background: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; }
+        
+        /* Utility */
+        .resize-none { resize: none; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- TOP NAVBAR -->
+    <div class="h-14 border-b border-slate-700 flex items-center px-6 bg-slate-900 flex-shrink-0 justify-between z-20">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600/20 p-2 rounded-lg">
+                <i class="fas fa-shield-virus text-blue-400 text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide text-white leading-tight">EmailGuard <span class="text-xs text-blue-400 font-normal px-2 py-0.5 bg-blue-900/50 rounded-full border border-blue-800">IDE v5.1</span></h1>
+            </div>
+        </div>
+        <div class="flex items-center gap-4 text-xs text-slate-500 font-mono">
+            <div class="flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                System Online
+            </div>
+            <div class="border-l border-slate-700 pl-4">
+                Local Environment: <span class="text-slate-300">WSL/Linux</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- SIDEBAR (Cheatsheet) -->
+        <div class="w-64 flex-col bg-slate-900 border-r border-slate-800 hidden md:flex">
+            <div class="p-4">
+                <p class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4">Supported Tags</p>
+                
+                <div class="space-y-4 overflow-y-auto pr-2 custom-scroll h-[calc(100vh-120px)]">
+                    <!-- Section -->
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Infrastructure</p>
+                        <ul class="text-xs space-y-2 font-mono text-slate-400">
+                            <li class="cursor-help hover:text-white" title="Replaced with sl2312 etc"><span class="text-emerald-400">[sr]</span> Server Name</li>
+                            <li class="cursor-help hover:text-white" title="Replaced with 192.168.x.x"><span class="text-emerald-400">[ip]</span> Sending IP</li>
+                            <li class="cursor-help hover:text-white" title="Replaced with lookalike domain"><span class="text-emerald-400">[domaine]</span> From Domain</li>
+                            <li class="cursor-help hover:text-white" title="RFC 2822 Date"><span class="text-emerald-400">[*date]</span> Current Date</li>
+                        </ul>
+                    </div>
+
+                    <!-- Section -->
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Target Info</p>
+                        <ul class="text-xs space-y-2 font-mono text-slate-400">
+                            <li class="cursor-help hover:text-white"><span class="text-purple-400">[*to]</span> Target Email</li>
+                            <li class="cursor-help hover:text-white"><span class="text-purple-400">[Name]</span> User Alias</li>
+                        </ul>
+                    </div>
+
+                    <!-- Section -->
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Random Engines</p>
+                        <ul class="text-xs space-y-2 font-mono text-slate-400">
+                            <li class="cursor-help hover:text-white" title="Numbers Only"><span class="text-amber-400">[RandomN/6]</span> 123456</li>
+                            <li class="cursor-help hover:text-white" title="Lower + Numbers"><span class="text-amber-400">[RandomL/10]</span> a1b2c3...</li>
+                            <li class="cursor-help hover:text-white" title="Upper + Lower + Numbers"><span class="text-amber-400">[RandomA/15]</span> Xy1Z...</li>
+                            <li class="cursor-help hover:text-white" title="MIME Boundary Generator"><span class="text-amber-400">(EE:NAME)</span> Boundary</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDITOR AREA (Left) -->
+        <div class="flex-1 flex flex-col border-r border-slate-700 bg-[#0b1120] relative">
+            <form id="mainForm" method="POST" action="/" class="flex flex-col h-full">
+                
+                <!-- Header Input Section -->
+                <div class="h-2/5 flex flex-col border-b border-slate-800">
+                    <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                        <label class="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+                            <i class="fas fa-envelope-open-text"></i> Header Template
+                        </label>
+                        <!-- COPY HEADER BUTTON -->
+                        <button type="button" onclick="copyToClip('headerInput', this)" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-blue-400 px-3 py-1 rounded border border-slate-700 transition">
+                            <i class="far fa-copy mr-1"></i> Copy Header
+                        </button>
+                    </div>
+                    <textarea id="headerInput" name="header_source" class="input-dark flex-1 p-4 resize-none border-0 focus:ring-0" placeholder="From: [Name]@[domaine]&#10;Subject: Hello [RandomA/6]&#10;...">{# Logic to update input if fixed #}{% if fixed_header %}{{ fixed_header }}{% else %}{{ in_header }}{% endif %}</textarea>
+                </div>
+
+                <!-- Body Input Section -->
+                <div class="h-3/5 flex flex-col">
+                    <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                        <label class="text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
+                            <i class="fas fa-code"></i> Body Template
+                        </label>
+                        <!-- COPY BODY BUTTON -->
+                        <button type="button" onclick="copyToClip('bodyInput', this)" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-blue-400 px-3 py-1 rounded border border-slate-700 transition">
+                            <i class="far fa-copy mr-1"></i> Copy Body
+                        </button>
+                    </div>
+                    <textarea id="bodyInput" name="body_source" class="input-dark flex-1 p-4 resize-none border-0 focus:ring-0" placeholder="<html>... Hello [Name] ...</html>">{# Logic to update input if fixed #}{% if fixed_body %}{{ fixed_body }}{% else %}{{ in_body }}{% endif %}</textarea>
+                </div>
+
+                <!-- Floating Action Bar -->
+                <div class="absolute bottom-6 right-6 left-6 flex gap-3 z-10">
+                    <button type="submit" name="action" value="scan" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold shadow-lg shadow-blue-900/50 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <i class="fas fa-play"></i> Simulate & Scan
+                    </button>
+                    
+                    <!-- Only show FIX button if we have results but they aren't fixed yet -->
+                    {% if result and result.status != "FIXED" %}
+                    <button type="submit" name="action" value="fix" class="flex-none w-48 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold shadow-lg shadow-emerald-900/50 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <i class="fas fa-wrench"></i> Fix Template
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <!-- RESULTS AREA (Right) -->
+        <div class="w-[500px] bg-slate-900 border-l border-slate-800 flex flex-col overflow-hidden">
+            
+            <div class="p-4 bg-slate-900 border-b border-slate-800 shadow-sm z-10">
+                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide">Analysis Report</h2>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-6">
+                
+                <!-- Success Message after Fix -->
+                {% if fix_log %}
+                <div class="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-lg">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-emerald-400 mt-1"></i>
+                        <div>
+                            <h4 class="text-sm font-bold text-emerald-400">Template Repaired</h4>
+                            <p class="text-xs text-emerald-200/70 mt-1 leading-relaxed">{{ fix_log }}</p>
+                            <p class="text-[10px] text-emerald-500 mt-2 font-mono uppercase">Inputs updated automatically</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if result and result.score is defined %}
+                
+                <!-- Score Card -->
+                <div class="panel p-6 text-center relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    
+                    <p class="text-xs font-bold text-slate-500 uppercase mb-2">SpamAssassin Score</p>
+                    <div class="flex items-baseline justify-center gap-1">
+                        <span class="text-5xl font-black text-white tracking-tighter">{{ result.score }}</span>
+                        <span class="text-lg text-slate-500 font-medium">/ 5.0</span>
+                    </div>
+                    
+                    <div class="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border
+                        {% if result.color == 'green' %} bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                        {% elif result.color == 'orange' %} bg-amber-500/10 text-amber-400 border-amber-500/20
+                        {% else %} bg-rose-500/10 text-rose-400 border-rose-500/20 {% endif %}">
+                        <span class="h-1.5 w-1.5 rounded-full {% if result.color == 'green' %} bg-emerald-400 {% elif result.color == 'orange' %} bg-amber-400 {% else %} bg-rose-400 {% endif %}"></span>
+                        {{ result.status }}
+                    </div>
+                </div>
+
+                <!-- Rules List -->
+                <div class="space-y-3">
+                    <p class="text-xs font-bold text-slate-500 uppercase ml-1">Detected Issues</p>
+                    
+                    {% for rule in result.rules %}
+                    <div class="p-3 rounded bg-slate-800/50 border-l-2 
+                        {% if rule.severity == 'critical' %} border-rose-500
+                        {% elif rule.severity == 'warning' %} border-amber-500
+                        {% else %} border-slate-600 {% endif %}">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-xs font-bold text-slate-300 font-mono">{{ rule.name }}</span>
+                            <span class="text-xs font-mono font-bold 
+                                {% if rule.points > 0 %} text-rose-400 {% else %} text-slate-500 {% endif %}">
+                                {{ rule.points }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-snug">{{ rule.desc }}</p>
+                    </div>
+                    {% endfor %}
+
+                    {% if not result.rules %}
+                    <div class="text-center py-8 opacity-50">
+                        <i class="fas fa-medal text-4xl text-slate-600 mb-2"></i>
+                        <p class="text-xs text-slate-500">Clean Scan. No penalties found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Simulation Preview -->
+                <div class="panel flex flex-col h-64">
+                    <div class="p-2 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Simulation Preview (Real Data)</span>
+                        <span class="text-[10px] text-slate-600 font-mono">Read-Only</span>
+                    </div>
+                    <textarea readonly class="flex-1 bg-[#0b1120] text-slate-500 p-3 font-mono text-[10px] resize-none outline-none leading-relaxed">{{ simulated_source }}</textarea>
+                </div>
+
+                {% else %}
+                <!-- Empty State -->
+                <div class="h-full flex flex-col items-center justify-center text-slate-600 opacity-60">
+                    <div class="h-16 w-16 bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-bolt text-2xl"></i>
+                    </div>
+                    <p class="font-bold text-sm">Ready to Simulate</p>
+                    <p class="text-xs mt-2 text-center max-w-[200px]">Paste your headers and body on the left, then click Scan.</p>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function copyToClip(id, btnElement) {
+            const el = document.getElementById(id);
+            el.select();
+            document.execCommand('copy');
+            
+            // Visual feedback on button
+            const originalHTML = btnElement.innerHTML;
+            btnElement.innerHTML = '<i class="fas fa-check mr-1"></i> Copied!';
+            btnElement.classList.add('text-emerald-400', 'border-emerald-500');
+            
+            setTimeout(() => {
+                btnElement.innerHTML = originalHTML;
+                btnElement.classList.remove('text-emerald-400', 'border-emerald-500');
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

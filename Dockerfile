@@ -27,4 +27,5 @@ EXPOSE 5000
 
 # 8. Start the App using Gunicorn (Production Server)
 # We bind to 0.0.0.0 so external users can reach it
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+# CRITICAL CHANGE: Used '-w 1' (1 worker) instead of 4 to prevent crashing on Free Tier (512MB RAM)
+CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:5000", "app:app"]
